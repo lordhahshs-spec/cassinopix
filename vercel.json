@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/((?!assets/|build/|storage/|favicon.ico|robots.txt).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
