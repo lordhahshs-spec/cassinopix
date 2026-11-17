@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="pt-BR" class="dark">
+<html lang="pt_BR" class="dark">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no, shrink-to-fit=no">
-  <title>Casa de Apostas Online</title>
+  <title>Casa de Apostas Online | GamesPix</title>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0474cc">
+  <meta name="csrf-token" content="preview-csrf-token">
   <link rel="icon" type="image/png" href="https://imagedelivery.net/BgH9d8bzsn4n0yijn4h7IQ/4aa3f036-8bfb-475c-a805-f7e52954f900/mobile">
   <link rel="stylesheet" href="/assets/css/fontawesome.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -76,8 +77,32 @@
   <div id="EclipeGaming"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.0.0/datepicker.min.js"></script>
   <script>
-    window._token = 'dev-preview-token';
-    const custom = {
+    window._token = 'preview-csrf-token';
+    const defaultSetting = {
+      id: 1,
+      software_name: 'GamesPix',
+      software_description: 'Aposte com confiança no melhor cassino online com saques via PIX imediatos.',
+      software_favicon: '01JNANKYEEM27MVWCWHK9Q5HVV.png',
+      software_logo_white: '01JNANKYEEM27MVWCWHK9Q5HVV.png',
+      software_logo_black: '01JNANKYEEM27MVWCWHK9Q5HVV.png',
+      currency_code: 'BRL',
+      decimal_format: 'dot',
+      currency_position: 'left',
+      prefix: 'R$',
+      storage: 'local',
+      min_deposit: 10,
+      max_deposit: 10000,
+      min_withdrawal: 20,
+      max_withdrawal: 5000,
+      initial_bonus: 100,
+      suitpay_is_enable: 1,
+      disable_spin: 0
+    };
+    if (!localStorage.getItem('setting')) {
+      localStorage.setItem('setting', JSON.stringify(defaultSetting));
+    }
+
+    var custom = {
       id: 1,
       font_family_default: "'Roboto Condensed', sans-serif",
       primary_color: "#FFC000",
@@ -117,11 +142,11 @@
       twitter: "#",
       whastapp: "#",
       youtube: "#",
-      juridico: "juridico@cassino.test",
-      suporte: "suporte@cassino.test",
-      parceiros: "parceiros@cassino.test",
+      juridico: "juridico@gamespix.com",
+      suporte: "suporte@gamespix.com",
+      parceiros: "parceiros@gamespix.com",
       texto_deposito: "Deposite via PIX com Saques Imediatos!",
-      texto_header: "Bem-vindo ao Melhor Cassino Online",
+      texto_header: "Bem-vindo ao GamesPix! Ganhe bônus no seu primeiro depósito via PIX!",
       texto_buton_bonus: "Bônus Disponível"
     };
     window.custom = custom;
