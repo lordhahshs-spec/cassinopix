@@ -1,0 +1,163 @@
+/* =============================================================
+   TOASTS (Vue-Toastification) — GLOBAL (site inteiro)
+   - Sempre no canto INFERIOR DIREITO (inclusive no mobile, que a lib
+     jogava pra tela cheia no topo)
+   - Sobem de baixo pra cima (column-reverse + slide-up)
+   - Cores da casa (azul), padronizadas
+   ============================================================= */
+.Vue-Toastification__container,
+.Vue-Toastification__container.top-left,
+.Vue-Toastification__container.top-right,
+.Vue-Toastification__container.top-center,
+.Vue-Toastification__container.bottom-left,
+.Vue-Toastification__container.bottom-right,
+.Vue-Toastification__container.bottom-center {
+    top: auto !important;
+    bottom: 1rem !important;
+    right: 1rem !important;
+    left: auto !important;
+    width: auto !important;
+    max-width: 380px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    flex-direction: column-reverse !important;
+    align-items: flex-end !important;
+}
+
+.Vue-Toastification__container .Vue-Toastification__toast {
+    width: auto !important;
+    max-width: 380px !important;
+    margin: 0 0 .6rem 0 !important;
+    margin-left: auto !important;
+    pointer-events: auto !important;
+    min-height: auto !important;
+    border-radius: 12px !important;
+    padding: 12px 14px !important;
+    font-size: .9rem !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .4) !important;
+}
+
+@media only screen and (max-width: 600px) {
+    .Vue-Toastification__container,
+    .Vue-Toastification__container.top-left,
+    .Vue-Toastification__container.top-right,
+    .Vue-Toastification__container.top-center,
+    .Vue-Toastification__container.bottom-left,
+    .Vue-Toastification__container.bottom-right,
+    .Vue-Toastification__container.bottom-center {
+        top: auto !important;
+        bottom: .7rem !important;
+        right: .7rem !important;
+        left: auto !important;
+        max-width: 90vw !important;
+    }
+
+    .Vue-Toastification__container .Vue-Toastification__toast {
+        max-width: 90vw !important;
+    }
+}
+
+/* Cores da casa (azul) — iguais para todos os tipos, vindas do painel */
+.Vue-Toastification__toast--default,
+.Vue-Toastification__toast--error,
+.Vue-Toastification__toast--success,
+.Vue-Toastification__toast--info,
+.Vue-Toastification__toast--warning {
+    background-color: var(--ci-primary-opacity-color, #04274a) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--ci-primary-color, #007fff) !important;
+}
+
+.Vue-Toastification__toast .Vue-Toastification__icon {
+    color: var(--ci-primary-color, #007fff) !important;
+}
+
+.Vue-Toastification__toast .Vue-Toastification__close-button {
+    color: #ffffff !important;
+    opacity: .6 !important;
+}
+
+.Vue-Toastification__toast .Vue-Toastification__progress-bar {
+    background-color: var(--ci-primary-color, #007fff) !important;
+}
+
+/* Entrada: sobe de baixo pra cima */
+@keyframes authToastIn {
+    from { opacity: 0; transform: translateY(100%); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.Vue-Toastification__bounce-enter-active {
+    animation: authToastIn .28s cubic-bezier(.21, 1.02, .73, 1) !important;
+}
+
+.Vue-Toastification__bounce-leave-active {
+    animation: authToastIn .2s ease-in reverse !important;
+}
+
+.Vue-Toastification__bounce-move {
+    transition: transform .2s ease !important;
+}
+/* =============================================================
+   CONFIRMAÇÃO DO PIX (em cima do QR Code)
+   ============================================================= */
+.pix-ok {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .97);
+    animation: pixOkFade .25s ease-out both;
+}
+
+.pix-ok-svg {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    animation: pixOkFill .35s ease-in-out .55s both, pixOkPop .3s ease-out .85s both;
+}
+
+.pix-ok-circle {
+    stroke: #16a34a;
+    stroke-width: 2.5;
+    stroke-dasharray: 152;
+    stroke-dashoffset: 152;
+    animation: pixOkStroke .55s cubic-bezier(.65, 0, .45, 1) forwards;
+}
+
+.pix-ok-check {
+    stroke: #ffffff;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 40;
+    stroke-dashoffset: 40;
+    animation: pixOkStroke .35s cubic-bezier(.65, 0, .45, 1) .8s forwards;
+}
+
+.pix-ok-title {
+    margin-top: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #15803d;
+    animation: pixOkUp .3s ease-out .9s both;
+}
+
+.pix-ok-sub {
+    font-size: 12px;
+    color: #4b5563;
+    animation: pixOkUp .3s ease-out 1s both;
+}
+
+@keyframes pixOkStroke { to { stroke-dashoffset: 0; } }
+@keyframes pixOkFill   { from { box-shadow: inset 0 0 0 0 #16a34a; } to { box-shadow: inset 0 0 0 42px #16a34a; } }
+@keyframes pixOkPop    { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes pixOkFade   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pixOkUp     { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }

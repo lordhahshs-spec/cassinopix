@@ -1,0 +1,26 @@
+instalação de custo 165
+chame 45999057184 joao 
+
+
+rota do administrativo do seu site
+ex: meusite.com/dash
+inclua um /dash na frente da sua url 
+
+usuário e senha admin abaixo
+
+admin@eu.com
+qwe123#
+
+registro na https://proftgames.com
+
+cole seu site nesse exemplo em callback na proftgames
+
+https://meusite.com/proftgames/
+
+não esqueça de substituir somente meusite.com pelo domínio do seu site real
+
+Gateway de pagamentos, para vc receber os depósitos
+
+https://ecompag.com
+
+No painel admin: Gateway -> cole o Client ID e o Client Secret da Ecompag
