@@ -1,10 +1,10 @@
 /**
- * Client-side mock API interceptor for static deployments (Vercel, GitHub Pages, Netlify)
- * Intercepts XMLHttpRequest (used by Axios) and window.fetch (used by bonus-float & suitpay)
+ * Robust in-browser Mock API Interceptor for static environments (Vercel, preview, GitHub Pages)
+ * Accurately implements XMLHttpRequest and fetch interfaces for Axios and Vue.
  */
 (function () {
-  if (window.__MOCK_API_LOADED__) return;
-  window.__MOCK_API_LOADED__ = true;
+  const RealXMLHttpRequest = window.XMLHttpRequest;
+  const RealFetch = window.fetch;
 
   const mockSetting = {
     id: 1,
@@ -79,14 +79,12 @@
     { id: 5, image: '01JNAP0R343RKW3A0EEMCCEQN1.jpg', type: 'home', description: 'Promoção 3', link: '#' }
   ];
 
-  function getMockResponse(rawUrl) {
+  function getMockData(rawUrl) {
     const url = (rawUrl || '').split('?')[0];
 
     if (url.includes('/suitpay/consult-status-transaction')) {
       return { status: 200, data: { status: 'pendente' } };
     }
-
-    if (!url.includes('/api/')) return null;
 
     if (url.includes('/settings/data') || url.endsWith('/api/settings')) {
       return { status: 200, data: { setting: mockSetting } };
@@ -163,62 +161,151 @@
     return { status: 200, data: {} };
   }
 
-  // Intercept XMLHttpRequest (used by Axios)
-  const OriginalXHR = window.XMLHttpRequest;
-  function MockXHR() {
-    const xhr = new OriginalXHR();
-    let requestUrl = '';
-    let mockResult = null;
-
-    const originalOpen = xhr.open;
-    xhr.open = function (method, url, ...args) {
-      requestUrl = url;
-      mockResult = getMockResponse(url);
-      return originalOpen.call(xhr, method, url, ...args);
-    };
-
-    const originalSend = xhr.send;
-    xhr.send = function (...args) {
-      if (mockResult) {
-        const responseData = JSON.stringify(mockResult.data);
-        setTimeout(() => {
-          Object.defineProperty(xhr, 'readyState', { value: 4, writable: true });
-          Object.defineProperty(xhr, 'status', { value: mockResult.status, writable: true });
-          Object.defineProperty(xhr, 'statusText', { value: mockResult.status === 200 ? 'OK' : 'Unauthorized', writable: true });
-          Object.defineProperty(xhr, 'responseText', { value: responseData, writable: true });
-          Object.defineProperty(xhr, 'response', {
-            value: xhr.responseType === 'json' ? mockResult.data : responseData,
-            writable: true
-          });
-
-          if (typeof xhr.onreadystatechange === 'function') xhr.onreadystatechange();
-          if (mockResult.status >= 200 && mockResult.status < 300) {
-            if (typeof xhr.onload === 'function') xhr.onload();
-          } else {
-            if (typeof xhr.onerror === 'function') xhr.onerror();
-          }
-          xhr.dispatchEvent(new Event('load'));
-        }, 10);
-        return;
-      }
-      return originalSend.call(xhr, ...args);
-    };
-
-    return xhr;
+  function shouldMock(rawUrl) {
+    if (!rawUrl) return false;
+    const url = String(rawUrl).toLowerCase();
+    return url.includes('/api/') || url.includes('/suitpay/') || url.includes('categories') || url.includes('banners') || url.includes('settings');
   }
-  window.XMLHttpRequest = MockXHR;
+
+  // Standalone MockXMLHttpRequest
+  class MockXMLHttpRequest extends EventTarget {
+    constructor() {
+      super();
+      this.readyState = 0;
+      this.status = 0;
+      this.statusText = '';
+      this.responseText = '';
+      this.response = '';
+      this.responseType = '';
+      this.responseURL = '';
+      this.withCredentials = false;
+      this.timeout = 0;
+      this.upload = new EventTarget();
+
+      this._headers = {};
+      this._responseHeaders = {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-cache'
+      };
+
+      this.onreadystatechange = null;
+      this.onload = null;
+      this.onloadstart = null;
+      this.onloadend = null;
+      this.onerror = null;
+      this.ontimeout = null;
+      this.onabort = null;
+      this.onprogress = null;
+    }
+
+    open(method, url) {
+      this._method = method;
+      this._url = url;
+      this.responseURL = url;
+      this.readyState = 1;
+      this._dispatch('readystatechange');
+    }
+
+    setRequestHeader(key, val) {
+      this._headers[String(key).toLowerCase()] = val;
+    }
+
+    send() {
+      this._dispatch('loadstart');
+
+      const mock = getMockData(this._url);
+      const jsonStr = JSON.stringify(mock.data);
+
+      setTimeout(() => {
+        this.status = mock.status;
+        this.statusText = mock.status === 200 ? 'OK' : (mock.status === 401 ? 'Unauthorized' : 'Not Found');
+        this.responseText = jsonStr;
+        this.response = this.responseType === 'json' ? mock.data : jsonStr;
+        this.readyState = 4;
+
+        this._dispatch('readystatechange');
+
+        if (mock.status >= 200 && mock.status < 300) {
+          this._dispatch('load');
+        } else {
+          this._dispatch('error');
+        }
+
+        this._dispatch('loadend');
+      }, 5);
+    }
+
+    abort() {
+      this.readyState = 0;
+      this._dispatch('abort');
+      this._dispatch('loadend');
+    }
+
+    getAllResponseHeaders() {
+      return Object.entries(this._responseHeaders)
+        .map(([k, v]) => `${k}: ${v}\r\n`)
+        .join('');
+    }
+
+    getResponseHeader(name) {
+      return this._responseHeaders[String(name).toLowerCase()] || null;
+    }
+
+    overrideMimeType() {}
+
+    _dispatch(eventName) {
+      const evt = new Event(eventName);
+      const fn = this['on' + eventName];
+      if (typeof fn === 'function') {
+        try {
+          fn.call(this, evt);
+        } catch (e) {
+          console.error('[MockXHR Handler Error]', e);
+        }
+      }
+      this.dispatchEvent(evt);
+    }
+  }
+
+  // Intercept window.XMLHttpRequest dynamically
+  window.XMLHttpRequest = function () {
+    const mockXhr = new MockXMLHttpRequest();
+    let realXhr = null;
+    let isMock = true;
+
+    return new Proxy(mockXhr, {
+      get(target, prop) {
+        if (!isMock && realXhr) {
+          const val = realXhr[prop];
+          return typeof val === 'function' ? val.bind(realXhr) : val;
+        }
+        const val = target[prop];
+        return typeof val === 'function' ? val.bind(target) : val;
+      },
+      set(target, prop, value) {
+        if (!isMock && realXhr) {
+          realXhr[prop] = value;
+          return true;
+        }
+        target[prop] = value;
+        return true;
+      }
+    });
+  };
+
+  // Keep prototype intact for instanceof checks
+  window.XMLHttpRequest.prototype = RealXMLHttpRequest.prototype;
 
   // Intercept window.fetch
-  const originalFetch = window.fetch;
   window.fetch = function (input, init) {
     const url = typeof input === 'string' ? input : input?.url;
-    const mock = getMockResponse(url);
-    if (mock) {
+    if (shouldMock(url)) {
+      const mock = getMockData(url);
       return Promise.resolve(new Response(JSON.stringify(mock.data), {
         status: mock.status,
         headers: { 'Content-Type': 'application/json' }
       }));
     }
-    return originalFetch.call(window, input, init);
+    return RealFetch.call(window, input, init);
   };
 })();
